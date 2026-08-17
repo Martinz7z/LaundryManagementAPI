@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="LaundryManagement.Api/LaundryManagement.Api.csproj" />
+  <Project Path="LaundryManagement.Blazor/LaundryManagement.Blazor.csproj" />
+  <Project Path="LaundryManagement.Tests/LaundryManagement.Tests.csproj" />
+</Solution>

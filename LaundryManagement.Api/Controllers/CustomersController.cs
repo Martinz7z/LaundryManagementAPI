@@ -14,102 +14,103 @@ public class CustomersController : ControllerBase
     public CustomersController(ICustomerRepository customerRepository)
     {
         _customerRepository = customerRepository;
-
-
     }
 
     [HttpGet]
-public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
-{
-    var customers = await _customerRepository.GetAllAsync();
-
-    var customerDtos = customers.Select(customer => new CustomerDto
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
     {
-        Id = customer.Id,
-        Name = customer.Name,
-        Email = customer.Email,
-        Phone = customer.Phone
-    });
+        var customers = await _customerRepository.GetAllAsync();
 
-    return Ok(customerDtos);
-}
-[HttpGet("{id}")]
-public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
-{
-    var customer = await _customerRepository.GetByIdAsync(id);
+        var customerDtos = customers.Select(customer => new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email,
+            Phone = customer.Phone
+        });
 
-    if (customer == null)
-    {
-        return NotFound();
+        return Ok(customerDtos);
     }
 
-    var customerDto = new CustomerDto
+    [HttpGet("{id}")]
+    public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
     {
-        Id = customer.Id,
-        Name = customer.Name,
-        Email = customer.Email,
-        Phone = customer.Phone
-    };
+        var customer = await _customerRepository.GetByIdAsync(id);
 
-    return Ok(customerDto);
-}
-[HttpPost]
-public async Task<ActionResult<CustomerDto>> CreateCustomer(
-    CreateCustomerDto createCustomerDto)
-{
-    var customer = new Customer
-    {
-        Name = createCustomerDto.Name,
-        Email = createCustomerDto.Email,
-        Phone = createCustomerDto.Phone
-    };
+        if (customer == null)
+        {
+            return NotFound();
+        }
 
-    await _customerRepository.CreateAsync(customer);
+        var customerDto = new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email,
+            Phone = customer.Phone
+        };
 
-    var customerDto = new CustomerDto
-    {
-        Id = customer.Id,
-        Name = customer.Name,
-        Email = customer.Email,
-        Phone = customer.Phone
-    };
-
-    return CreatedAtAction(
-        nameof(GetCustomer),
-        new { id = customer.Id },
-        customerDto);
-}
-[HttpPut("{id}")]
-public async Task<IActionResult> UpdateCustomer(
-    int id,
-    UpdateCustomerDto updateCustomerDto)
-{
-    var customer = await _customerRepository.GetByIdAsync(id);
-
-    if (customer == null)
-    {
-        return NotFound();
+        return Ok(customerDto);
     }
 
-    customer.Name = updateCustomerDto.Name;
-    customer.Email = updateCustomerDto.Email;
-    customer.Phone = updateCustomerDto.Phone;
-
-    await _customerRepository.UpdateAsync(customer);
-
-    return NoContent();
-}
-[HttpDelete("{id}")]
-public async Task<IActionResult> DeleteCustomer(int id)
-{
-    var deleted = await _customerRepository.DeleteAsync(id);
-
-    if (!deleted)
+    [HttpPost]
+    public async Task<ActionResult<CustomerDto>> CreateCustomer(
+        CreateCustomerDto createCustomerDto)
     {
-        return NotFound();
+        var customer = new Customer
+        {
+            Name = createCustomerDto.Name,
+            Email = createCustomerDto.Email,
+            Phone = createCustomerDto.Phone
+        };
+
+        await _customerRepository.CreateAsync(customer);
+
+        var customerDto = new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Email = customer.Email,
+            Phone = customer.Phone
+        };
+
+        return CreatedAtAction(
+            nameof(GetCustomer),
+            new { id = customer.Id },
+            customerDto);
     }
 
-    return NoContent();
-}
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateCustomer(
+        int id,
+        UpdateCustomerDto updateCustomerDto)
+    {
+        var customer = await _customerRepository.GetByIdAsync(id);
 
+        if (customer == null)
+        {
+            return NotFound();
+        }
+
+        customer.Name = updateCustomerDto.Name;
+        customer.Email = updateCustomerDto.Email;
+        customer.Phone = updateCustomerDto.Phone;
+
+        await _customerRepository.UpdateAsync(customer);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCustomer(int id)
+    {
+        var deleted = await _customerRepository.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }

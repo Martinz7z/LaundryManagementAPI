@@ -58,4 +58,19 @@ public class OrderRepository : IOrderRepository
 
         return true;
     }
+    public async Task RecalculateTotalAsync(int orderId)
+{
+    var order = await _context.Orders.FindAsync(orderId);
+
+    if (order == null)
+    {
+        return;
+    }
+
+    order.TotalPrice = await _context.OrderItems
+        .Where(item => item.OrderId == orderId)
+        .SumAsync(item => item.Price * item.Quantity);
+
+    await _context.SaveChangesAsync();
+}
 }

@@ -98,6 +98,7 @@ public class OrderItemsController : ControllerBase
         };
 
         await _orderItemRepository.CreateAsync(orderItem);
+        await _orderRepository.RecalculateTotalAsync(orderItem.OrderId);
 
         var itemDto = new OrderItemDto
         {
@@ -136,20 +137,28 @@ public class OrderItemsController : ControllerBase
         orderItem.Quantity = updateDto.Quantity;
 
         await _orderItemRepository.UpdateAsync(orderItem);
+        await _orderRepository.RecalculateTotalAsync(orderItem.OrderId);
 
         return NoContent();
     }
 
-    [HttpDelete("{id}")]
+    
+   [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteOrderItem(int id)
     {
-        var deleted = await _orderItemRepository.DeleteAsync(id);
+            var orderItem = await _orderItemRepository.GetByIdAsync(id);
 
-        if (!deleted)
-        {
-            return NotFound();
-        }
+            if (orderItem == null)
+            {
+                return NotFound();
+            }
 
-        return NoContent();
+            var orderId = orderItem.OrderId;
+
+            await _orderItemRepository.DeleteAsync(id);
+
+            await _orderRepository.RecalculateTotalAsync(orderId);
+
+            return NoContent();
     }
 }

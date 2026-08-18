@@ -13,4 +13,6 @@ public interface IOrderRepository
     Task<bool> UpdateAsync(Order order);
 
     Task<bool> DeleteAsync(int id);
+
+    Task RecalculateTotalAsync(int orderId);
 }

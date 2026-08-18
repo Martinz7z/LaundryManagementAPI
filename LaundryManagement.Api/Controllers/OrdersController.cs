@@ -2,6 +2,7 @@ using LaundryManagement.Api.DTOs;
 using LaundryManagement.Api.Interfaces;
 using LaundryManagement.Api.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LaundryManagement.Api.Controllers;
 
@@ -62,7 +63,8 @@ public class OrdersController : ControllerBase
 
         return Ok(orderDto);
     }
-
+    
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<OrderDto>> CreateOrder(
         CreateOrderDto createOrderDto)
@@ -103,6 +105,7 @@ public class OrdersController : ControllerBase
             orderDto);
     }
 
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateOrder(
         int id,
@@ -122,7 +125,8 @@ public class OrdersController : ControllerBase
 
         return NoContent();
     }
-
+    
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteOrder(int id)
     {

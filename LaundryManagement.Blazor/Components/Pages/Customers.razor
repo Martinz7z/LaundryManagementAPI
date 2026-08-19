@@ -1,0 +1,175 @@
+@page "/customers"
+@rendermode InteractiveServer
+
+@using System.Net.Http.Json
+@using LaundryManagement.Blazor.Models
+@inject IHttpClientFactory HttpClientFactory
+@using LaundryManagement.Blazor.Services
+@inject AuthService AuthService
+
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+<p class="lead">Manage laundry customers</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>Add Customer</h4>
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input class="form-control" @bind="newCustomer.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" @bind="newCustomer.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input class="form-control" @bind="newCustomer.Phone" />
+        </div>
+
+        <button class="btn btn-primary" @onclick="AddCustomer">
+            Add Customer
+        </button>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-info mt-3">
+                @message
+            </div>
+        }
+    </div>
+</div>
+
+<h3>Customer List</h3>
+
+@if (loading)
+{
+    <p>Loading customers...</p>
+}
+else if (customers.Count == 0)
+{
+    <p>No customers found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var customer in customers)
+            {
+                <tr>
+                    <td>@customer.Name</td>
+                    <td>@customer.Email</td>
+                    <td>@customer.Phone</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger"
+                                @onclick="() => DeleteCustomer(customer.Id)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<CustomerDto> customers = new();
+    private CustomerDto newCustomer = new();
+
+    private bool loading = true;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("LaundryApi");
+
+            customers =
+                await client.GetFromJsonAsync<List<CustomerDto>>(
+                    "api/customers") ?? new();
+        }
+        catch
+        {
+            message = "Could not load customers.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task AddCustomer()
+    {
+        message = null;
+
+        try
+        {
+            var client = AuthService.CreateAuthenticatedClient();
+
+            var response = await client.PostAsJsonAsync(
+                "api/customers",
+                newCustomer);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Customer added successfully.";
+
+                newCustomer = new CustomerDto();
+
+                await LoadCustomers();
+            }
+            else
+            {
+                message = $"Customer could not be added. Status: {(int)response.StatusCode} {response.StatusCode}";
+            }
+        }
+        catch
+        {
+            message = "Could not connect to the API.";
+        }
+    }
+
+    private async Task DeleteCustomer(int id)
+    {
+        try
+        {
+            var client = AuthService.CreateAuthenticatedClient();
+
+            var response =
+                await client.DeleteAsync($"api/customers/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "Customer deleted.";
+                await LoadCustomers();
+            }
+            else
+            {
+                message = "Customer could not be deleted.";
+            }
+        }
+        catch
+        {
+            message = "Could not connect to the API.";
+        }
+    }
+}

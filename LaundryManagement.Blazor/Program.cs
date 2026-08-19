@@ -1,4 +1,5 @@
 using LaundryManagement.Blazor.Components;
+using LaundryManagement.Blazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,8 @@ builder.Services.AddHttpClient("LaundryApi", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
 });
+
+builder.Services.AddScoped<AuthService>();
 
 var app = builder.Build();
 

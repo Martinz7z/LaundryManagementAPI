@@ -1,7 +1,87 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+@using System.Net.Http.Json
+@using LaundryManagement.Blazor.Models
+@inject IHttpClientFactory HttpClientFactory
 
-<h1>Hello, world!</h1>
+<PageTitle>Laundry Manager</PageTitle>
 
-Welcome to your new app.
+<h1>Laundry Manager</h1>
+
+<p class="lead">Customer and order management dashboard</p>
+
+@if (loading)
+{
+    <p>Loading customers...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+else
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Customers</h5>
+            <h2>@customers.Count</h2>
+            <p class="card-text">Registered customers</p>
+        </div>
+    </div>
+
+    <h3>Recent Customers</h3>
+
+    @if (customers.Count == 0)
+    {
+        <p>No customers found.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in customers)
+                {
+                    <tr>
+                        <td>@customer.Name</td>
+                        <td>@customer.Email</td>
+                        <td>@customer.Phone</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private List<CustomerDto> customers = new();
+    private bool loading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("LaundryApi");
+
+            customers =
+                await client.GetFromJsonAsync<List<CustomerDto>>(
+                    "api/customers") ?? new List<CustomerDto>();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Could not connect to the Laundry Management API.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

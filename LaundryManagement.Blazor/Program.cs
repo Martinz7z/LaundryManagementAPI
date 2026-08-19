@@ -6,6 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"]
+    ?? throw new InvalidOperationException("API base URL is missing.");
+
+builder.Services.AddHttpClient("LaundryApi", client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

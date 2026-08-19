@@ -12,7 +12,7 @@
 
 @if (loading)
 {
-    <p>Loading customers...</p>
+    <p>Loading dashboard...</p>
 }
 else if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -22,37 +22,73 @@ else if (!string.IsNullOrEmpty(errorMessage))
 }
 else
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title">Customers</h5>
-            <h2>@customers.Count</h2>
-            <p class="card-text">Registered customers</p>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Customers</h5>
+                    <h2>@customers.Count</h2>
+                    <p class="card-text">Registered customers</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Orders</h5>
+                    <h2>@orders.Count</h2>
+                    <p class="card-text">Total orders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Services</h5>
+                    <h2>@services.Count</h2>
+                    <p class="card-text">Available laundry services</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h3>Recent Customers</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Order Value</h5>
+            <h2>€@orders.Sum(order => order.TotalPrice).ToString("0.00")</h2>
+            <p class="card-text">Combined value of current orders</p>
+        </div>
+    </div>
 
-    @if (customers.Count == 0)
+    <h3>Recent Orders</h3>
+
+    @if (orders.Count == 0)
     {
-        <p>No customers found.</p>
+        <p>No orders found.</p>
     }
     else
     {
         <table class="table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Collection</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var customer in customers)
+                @foreach (var order in orders.OrderByDescending(o => o.OrderDate).Take(5))
                 {
                     <tr>
-                        <td>@customer.Name</td>
-                        <td>@customer.Email</td>
-                        <td>@customer.Phone</td>
+                        <td>@order.CustomerName</td>
+                        <td>@order.Status</td>
+                        <td>
+                            @(order.CollectionDate?.ToString("dd/MM/yyyy HH:mm") ?? "-")
+                        </td>
+                        <td>€@order.TotalPrice.ToString("0.00")</td>
                     </tr>
                 }
             </tbody>
@@ -62,6 +98,9 @@ else
 
 @code {
     private List<CustomerDto> customers = new();
+    private List<OrderDto> orders = new();
+    private List<ServiceDto> services = new();
+
     private bool loading = true;
     private string? errorMessage;
 
@@ -73,7 +112,15 @@ else
 
             customers =
                 await client.GetFromJsonAsync<List<CustomerDto>>(
-                    "api/customers") ?? new List<CustomerDto>();
+                    "api/customers") ?? new();
+
+            orders =
+                await client.GetFromJsonAsync<List<OrderDto>>(
+                    "api/orders") ?? new();
+
+            services =
+                await client.GetFromJsonAsync<List<ServiceDto>>(
+                    "api/services") ?? new();
         }
         catch (Exception)
         {

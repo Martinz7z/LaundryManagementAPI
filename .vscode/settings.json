@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/5b6dcedb-51c8-4d32-82bf-be02bc0edef7/resourceGroups/laundrymanagement-api-mz_group/providers/Microsoft.Web/sites/laundrymanagement-api-mz",
+    "appService.deploySubpath": "publish-api"
+}
